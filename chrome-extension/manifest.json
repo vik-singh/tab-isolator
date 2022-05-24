@@ -1,0 +1,26 @@
+{
+  "name": "Tab Isolator",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Ever wished each tab had its own session?",
+  "homepage_url": "https://www.github.com/vik-singh/tab-isolator",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "contentSettings",
+    "webRequest",
+    "webRequestBlocking",
+    "*://*/*"
+  ]
+}
