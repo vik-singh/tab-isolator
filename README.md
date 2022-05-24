@@ -32,7 +32,7 @@ For localStorage the relevant patched methods look like this (see content.js for
 
 ```
 
-Sites that may store auth state in a cookie need different handling. Cookies can be set via headers, document.cookie methods, and thew new Cookie Store API. We'll focus on patching the first two to cover most use-cases. Sites created after the Cookie Store API was released are also likely to be using something better like localStorage for client-side storage. Here is an example of monkey-patching document.cookie methods, which simply add the namespace in front of the cookie name:
+Sites that may store auth state in a cookie need different handling. Cookies can be set via headers, document.cookie methods, and the new Cookie Store API. We'll focus on patching the first two to cover most use-cases. Sites created after the Cookie Store API was released are also likely to be using something better like localStorage for client-side storage. Here is an example of monkey-patching document.cookie methods - the set() simply adds the namespace in front of the cookie names, and the get() removes the namespace before returning the cookie string:
 
 ```
     Object.defineProperty(document, 'cookie', {
