@@ -1,15 +1,5 @@
-function getNamespace(tabCallback) {
-  return chrome.tabs.query(
-    {
-      active: true,
-      currentWindow: true
-    },
-    ([currentTab]) => {
-      if (currentTab && currentTab['id']) {
-        return tabCallback('tab' + currentTab.id)
-      }
-    }
-  )
+function getNamespace(tabId) {
+  return 'tab' + tabId
 }
 
 const isHeader = (requestHeader, headerName) =>
@@ -43,7 +33,8 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
 
 chrome.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
-    return getNamespace((namespace) => {
+    const namespace = getNamespace(details.tabId)
+
       details.requestHeaders.forEach((requestHeader) => {
         if (isCookieHeader(requestHeader)) {
           requestHeader.value = processCookieStr(requestHeader.value, namespace)
@@ -53,7 +44,6 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
       return {
         requestHeaders: details.requestHeaders
       }
-    })
   },
   {
     urls: ['<all_urls>']
@@ -63,8 +53,9 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 
 chrome.webRequest.onHeadersReceived.addListener(
   (details) => {
-    return getNamespace((namespace) => {
-      details.responseHeaders.forEach((responseHeader) => {
+    const namespace = getNamespace(details.tabId)
+
+    details.responseHeaders.forEach((responseHeader) => {
         if (isSetCookieHeader(responseHeader)) {
           responseHeader.value = processSetCookieStr(
             responseHeader.value,
@@ -76,7 +67,6 @@ chrome.webRequest.onHeadersReceived.addListener(
       return {
         responseHeaders: details.responseHeaders
       }
-    })
   },
   {
     urls: ['<all_urls>']

@@ -54,7 +54,8 @@ Also, when the client sends requests to the server we'll want the cookie names t
 ```
 chrome.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
-    return getNamespace((namespace) => {
+    const namespace = getNamespace(details.tabId)
+
       details.requestHeaders.forEach((requestHeader) => {
         if (isCookieHeader(requestHeader)) {
           requestHeader.value = processCookieStr(requestHeader.value, namespace)
@@ -64,7 +65,6 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
       return {
         requestHeaders: details.requestHeaders
       }
-    })
   },
   {
     urls: ['<all_urls>']
@@ -74,8 +74,9 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 
 chrome.webRequest.onHeadersReceived.addListener(
   (details) => {
-    return getNamespace((namespace) => {
-      details.responseHeaders.forEach((responseHeader) => {
+    const namespace = getNamespace(details.tabId)
+
+    details.responseHeaders.forEach((responseHeader) => {
         if (isSetCookieHeader(responseHeader)) {
           responseHeader.value = processSetCookieStr(
             responseHeader.value,
@@ -87,7 +88,6 @@ chrome.webRequest.onHeadersReceived.addListener(
       return {
         responseHeaders: details.responseHeaders
       }
-    })
   },
   {
     urls: ['<all_urls>']
@@ -96,4 +96,4 @@ chrome.webRequest.onHeadersReceived.addListener(
 )
 ```
 
-localStorage with monkey-patching worked well right out of the gate - its simple enough and the sites I tried had no issues. Cookies were another story. First, I dealt with a race condition where the content.js script would not load early enough before other scripts on the page. I had to make sure it was the first script loaded so I wrote some code in content.js that injects the script into the head. There were other issues with cookie-based-auth sites where sometimes, some cookies were not saved namespaced. I had timeboxed myself so I ran out of time to fully debug, but theoretically my strategy should work with a small number of tabs open for the same site. Where it would fail is when we hit the limit with what can be saved in a cookie. We'd need to at that point switch to saving the namespaced cookie parameters elsewhere, like localStorage, and then only loading into the cookie the relevant tab, rather than all namespaced cookie names and values. We are also ignoring the few sites that may use the Cookie Store API, which should be negligible.
+Both localStorage and cookie-based sites isolate well with monkey-patched methods. My cookie strategy should work with a small number of tabs open for the same site. Where it would fail is when we hit the limit with what can be saved in a cookie. We'd need to at that point switch to saving the namespaced cookie parameters elsewhere, like localStorage, and then only loading into the cookie the relevant tab, rather than all namespaced cookie names and values. This should be a fairly simple change but since this is a POC I didn't bother. We are also ignoring the few sites that may use the Cookie Store API, which should be negligible.
