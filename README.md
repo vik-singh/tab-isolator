@@ -4,7 +4,7 @@ This Chrome extension isolates browser tabs so each tab can have its own logged 
 
 Auth state is usually persisted in a cookie or localStorage, so this extension patches these web APIs to namespace the stored parameters to a particular tab. I chose to use the tabId as the namespace.
 
-For localStorage the relevant patched methods look like this (see content.js for full code):
+For localStorage the relevant patched methods look like this (see [content.js](./chrome-extension/content.js) for full code):
 
 ```
      // monkey-patch localStorage handling
@@ -49,22 +49,22 @@ Sites that may store auth state in a cookie need different handling. Cookies can
     })
 ```
 
-Also, when the client sends requests to the server we'll want the cookie names to match what the server expects, so we'll strip the namespace when sending a request to the server. When we receive a request to set cookie, we'll want to save it namespaced. (see background.js for full code)
+Also, when the client sends requests to the server we'll want the cookie names to match what the server expects, so we'll strip the namespace when sending a request to the server. When we receive a request to set cookie, we'll want to save it namespaced. (see [background.js](./chrome-extension/background.js) for full code)
 
 ```
 chrome.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
     const namespace = getNamespace(details.tabId)
 
-      details.requestHeaders.forEach((requestHeader) => {
-        if (isCookieHeader(requestHeader)) {
-          requestHeader.value = processCookieStr(requestHeader.value, namespace)
-        }
-      })
-
-      return {
-        requestHeaders: details.requestHeaders
+    details.requestHeaders.forEach((requestHeader) => {
+      if (isCookieHeader(requestHeader)) {
+        requestHeader.value = processCookieStr(requestHeader.value, namespace)
       }
+    })
+
+    return {
+      requestHeaders: details.requestHeaders
+    }
   },
   {
     urls: ['<all_urls>']
@@ -77,17 +77,17 @@ chrome.webRequest.onHeadersReceived.addListener(
     const namespace = getNamespace(details.tabId)
 
     details.responseHeaders.forEach((responseHeader) => {
-        if (isSetCookieHeader(responseHeader)) {
-          responseHeader.value = processSetCookieStr(
-            responseHeader.value,
-            namespace
-          )
-        }
-      })
-
-      return {
-        responseHeaders: details.responseHeaders
+      if (isSetCookieHeader(responseHeader)) {
+        responseHeader.value = processSetCookieStr(
+          responseHeader.value,
+          namespace
+        )
       }
+    })
+
+    return {
+      responseHeaders: details.responseHeaders
+    }
   },
   {
     urls: ['<all_urls>']

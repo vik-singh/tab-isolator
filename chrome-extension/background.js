@@ -35,15 +35,15 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
     const namespace = getNamespace(details.tabId)
 
-      details.requestHeaders.forEach((requestHeader) => {
-        if (isCookieHeader(requestHeader)) {
-          requestHeader.value = processCookieStr(requestHeader.value, namespace)
-        }
-      })
-
-      return {
-        requestHeaders: details.requestHeaders
+    details.requestHeaders.forEach((requestHeader) => {
+      if (isCookieHeader(requestHeader)) {
+        requestHeader.value = processCookieStr(requestHeader.value, namespace)
       }
+    })
+
+    return {
+      requestHeaders: details.requestHeaders
+    }
   },
   {
     urls: ['<all_urls>']
@@ -56,17 +56,17 @@ chrome.webRequest.onHeadersReceived.addListener(
     const namespace = getNamespace(details.tabId)
 
     details.responseHeaders.forEach((responseHeader) => {
-        if (isSetCookieHeader(responseHeader)) {
-          responseHeader.value = processSetCookieStr(
-            responseHeader.value,
-            namespace
-          )
-        }
-      })
-
-      return {
-        responseHeaders: details.responseHeaders
+      if (isSetCookieHeader(responseHeader)) {
+        responseHeader.value = processSetCookieStr(
+          responseHeader.value,
+          namespace
+        )
       }
+    })
+
+    return {
+      responseHeaders: details.responseHeaders
+    }
   },
   {
     urls: ['<all_urls>']
