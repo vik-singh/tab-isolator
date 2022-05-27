@@ -1,4 +1,4 @@
-function getNamespace(tabId) {
+const getNamespace = (tabId) => {
   return 'tab' + tabId
 }
 
